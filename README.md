@@ -2,6 +2,8 @@
 
 A minimalist and clean SDDM theme with user selection, session picker, and theme switching.
 
+![Demo](demo.gif)
+
 Based on the original [Nibelung Theme](https://github.com/veschin/nibelung-theme).
 
 ## One-line Installation
