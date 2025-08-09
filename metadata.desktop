@@ -1,0 +1,16 @@
+[SddmGreeterTheme]
+Name=Nibelung
+Description=A clean and modern SDDM theme with user selection, session support and theme switching
+Author=veschin
+Copyright=(c) 2025, veschin
+License=GPL-3.0
+Type=sddm-theme
+Version=1.0
+Website=https://github.com/veschin/nibelung-sddm-theme
+Screenshot=screenshot.png
+MainScript=Main.qml
+ConfigFile=theme.conf
+TranslationsDirectory=translations
+Email=
+Theme-Id=nibelung
+Theme-API=2.0
