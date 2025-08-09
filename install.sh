@@ -97,14 +97,20 @@ configure_theme() {
             echo "Current=$THEME_NAME" >> "$SDDM_CONF.temp"
         fi
         
-        # Show diff
+        # Show diff with colors if available
         echo "Proposed changes to $SDDM_CONF:"
         echo "----------------------------------------"
-        diff -u "$SDDM_CONF" "$SDDM_CONF.temp" || true
+        if command -v colordiff &> /dev/null; then
+            colordiff -u "$SDDM_CONF" "$SDDM_CONF.temp" || true
+        elif diff --help | grep -q color; then
+            diff -u --color=always "$SDDM_CONF" "$SDDM_CONF.temp" || true
+        else
+            diff -u "$SDDM_CONF" "$SDDM_CONF.temp" || true
+        fi
         echo "----------------------------------------"
         
         echo "Apply these changes? (y/n)"
-        read -r confirm < /dev/tty
+        read -r confirm
         if [[ "$confirm" =~ ^[Yy]$ ]]; then
             mv "$SDDM_CONF.temp" "$SDDM_CONF"
             echo "Theme activated in $SDDM_CONF"
@@ -122,7 +128,7 @@ configure_theme() {
         echo "----------------------------------------"
         
         echo "Create this config file? (y/n)"
-        read -r confirm < /dev/tty
+        read -r confirm
         if [[ "$confirm" =~ ^[Yy]$ ]]; then
             cat > "$SDDM_CONF" << EOF
 [Theme]
@@ -140,7 +146,7 @@ if [ -f "$SDDM_CONF" ]; then
         echo "Theme is already active in $SDDM_CONF"
     else
         echo "Do you want to automatically activate the theme? (y/n)"
-        read -r response < /dev/tty
+        read -r response
         if [[ "$response" =~ ^[Yy]$ ]]; then
             configure_theme
         else

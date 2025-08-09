@@ -7,7 +7,7 @@ Based on the original [Nibelung Theme](https://github.com/veschin/nibelung-theme
 ## One-line Installation
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/veschin/nibelung-sddm-theme/main/install.sh | sudo bash
+sudo bash -c "$(curl -sSL https://raw.githubusercontent.com/veschin/nibelung-sddm-theme/main/install.sh)"
 ```
 
 ## Manual Installation
