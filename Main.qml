@@ -20,11 +20,8 @@ Rectangle {
     
     // Persistent settings
     property bool isDark: true
-    property string savedTheme: ""
-    property int savedSession: sessionModel.lastIndex
     property bool capsLockOn: false
-    property int currentLayout: 0
-    property var layouts: ["EN", "RU", "DE", "FR"]
+    property bool isPortrait: root.height > root.width * 1.2
     
     // Light theme colors
     property string lightBgColor: "#F8F9FA"
@@ -69,7 +66,7 @@ Rectangle {
             password.text = ""
             errorMessage.color = "#ff4444"
             errorMessage.text = qsTr("Login failed!")
-            password.focus = true
+            password.forceActiveFocus()
         }
     }
     
@@ -91,12 +88,13 @@ Rectangle {
         id: welcomeTitle
         text: welcomeText
         font.family: sandyHouseFont.name
-        font.pixelSize: Math.min(parent.width * 0.20, parent.height * 0.15)
+        font.pixelSize: isPortrait ? Math.min(parent.width * 0.15, parent.height * 0.08)
+                                   : Math.min(parent.width * 0.20, parent.height * 0.15)
         font.letterSpacing: parent.width * 0.002
         color: grayOne
         renderType: Text.NativeRendering
         antialiasing: true
-        width: parent.width * 0.40
+        width: isPortrait ? parent.width * 0.70 : parent.width * 0.40
         wrapMode: Text.WordWrap
         horizontalAlignment: Text.AlignHCenter
         lineHeight: 0.9
@@ -104,19 +102,20 @@ Rectangle {
         anchors {
             horizontalCenter: parent.horizontalCenter
             bottom: loginContainer.top
-            bottomMargin: parent.height * 0.19
+            bottomMargin: isPortrait ? parent.height * 0.08 : parent.height * 0.19
         }
     }
     
     // Main login container
     Item {
         id: loginContainer
-        width: Math.min(parent.width * 0.4, parent.height * 0.4)
+        width: isPortrait ? Math.min(parent.width * 0.6, parent.height * 0.35)
+                          : Math.min(parent.width * 0.4, parent.height * 0.4)
         height: childrenRect.height
         anchors {
             horizontalCenter: parent.horizontalCenter
             verticalCenter: parent.verticalCenter
-            verticalCenterOffset: parent.height * 0.15
+            verticalCenterOffset: isPortrait ? parent.height * 0.05 : parent.height * 0.15
         }
         
         Column {
@@ -150,7 +149,7 @@ Rectangle {
                         anchors.leftMargin: parent.width * 0.04
                         anchors.verticalCenter: parent.verticalCenter
                         font.family: agaveFont.name
-                    antialiasing: true
+                        antialiasing: true
                         font.pixelSize: Math.max(parent.width * 0.04, 12)
                         color: fgColor
                         text: {
@@ -160,13 +159,13 @@ Rectangle {
                             return "User"
                         }
                     }
-                    
+
                     Text {
                         anchors.right: parent.right
                         anchors.rightMargin: parent.width * 0.04
                         anchors.verticalCenter: parent.verticalCenter
                         font.family: agaveFont.name
-                    antialiasing: true
+                        antialiasing: true
                         font.pixelSize: Math.max(parent.width * 0.03, 8)
                         color: grayOne
                         text: userPopup.visible ? "▲" : "▼"
@@ -211,21 +210,15 @@ Rectangle {
                         anchors.leftMargin: parent.width * 0.04
                         anchors.rightMargin: parent.width * 0.04
                         font.family: agaveFont.name
-                    antialiasing: true
+                        antialiasing: true
                         font.pixelSize: Math.max(parent.width * 0.04, 12)
                         color: fgColor
                         echoMode: TextInput.Password
                         verticalAlignment: TextInput.AlignVCenter
                         focus: true
                         
-                        Keys.onEnterPressed: {
-                            var selectedUser = userModel.data(userModel.index(userIndex, 0), Qt.UserRole + 1)
-                            sddm.login(selectedUser, password.text, sessionIndex)
-                        }
-                        Keys.onReturnPressed: {
-                            var selectedUser = userModel.data(userModel.index(userIndex, 0), Qt.UserRole + 1)
-                            sddm.login(selectedUser, password.text, sessionIndex)
-                        }
+                        Keys.onEnterPressed: doLogin()
+                        Keys.onReturnPressed: doLogin()
                     }
                 }
             }
@@ -257,7 +250,7 @@ Rectangle {
                         anchors.leftMargin: parent.width * 0.04
                         anchors.verticalCenter: parent.verticalCenter
                         font.family: agaveFont.name
-                    antialiasing: true
+                        antialiasing: true
                         font.pixelSize: Math.max(parent.width * 0.04, 12)
                         color: fgColor
                         text: sessionModel.data(sessionModel.index(sessionIndex, 0), Qt.UserRole + 4)
@@ -268,7 +261,7 @@ Rectangle {
                         anchors.rightMargin: parent.width * 0.04
                         anchors.verticalCenter: parent.verticalCenter
                         font.family: agaveFont.name
-                    antialiasing: true
+                        antialiasing: true
                         font.pixelSize: Math.max(parent.width * 0.03, 8)
                         color: grayOne
                         text: sessionPopup.visible ? "▲" : "▼"
@@ -315,7 +308,7 @@ Rectangle {
                         anchors.centerIn: parent
                         text: "LOGIN"
                         font.family: agaveFont.name
-                    antialiasing: true
+                        antialiasing: true
                         font.pixelSize: Math.max(parent.width * 0.035, 9)
                         font.letterSpacing: parent.width * 0.004
                         color: bgColor
@@ -325,10 +318,7 @@ Rectangle {
                         id: loginButtonMouse
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            var selectedUser = userModel.data(userModel.index(userIndex, 0), Qt.UserRole + 1)
-                            sddm.login(selectedUser, password.text, sessionIndex)
-                        }
+                        onClicked: doLogin()
                     }
                 }
                 
@@ -422,6 +412,7 @@ Rectangle {
                 MouseArea {
                     id: userDelegateMouse
                     anchors.fill: parent
+                    hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         userIndex = index
@@ -475,6 +466,7 @@ Rectangle {
                 MouseArea {
                     id: delegateMouse
                     anchors.fill: parent
+                    hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         sessionIndex = index
@@ -498,12 +490,11 @@ Rectangle {
         Row {
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: parent.width * 0.015
-        
-        
+
             // Caps Lock indicator
             Rectangle {
                 width: Math.max(root.width * 0.07, 70)
-                height: Math.max(root.height * 0.04, 35)
+                height: Math.max(Math.min(root.width, root.height) * 0.04, 35)
                 color: capsLockOn ? accentColor : "transparent"
                 border.color: capsLockOn ? accentColor : borderColor
                 border.width: Math.max(root.width * 0.001, 1)
@@ -524,7 +515,7 @@ Rectangle {
             // Theme toggle button
             Rectangle {
                 width: Math.max(root.width * 0.05, 50)
-                height: Math.max(root.height * 0.04, 35)
+                height: Math.max(Math.min(root.width, root.height) * 0.04, 35)
                 color: grayFour
                 radius: Math.max(root.width * 0.004, 3)
                 
@@ -549,7 +540,7 @@ Rectangle {
             id: clock
             anchors.horizontalCenter: parent.horizontalCenter
             font.family: agaveFont.name
-                antialiasing: true
+            antialiasing: true
             font.pixelSize: Math.max(root.width * 0.014, 14)
             color: grayOne
             
@@ -566,9 +557,15 @@ Rectangle {
             }
         }
     }
-    
-    
-    
+
+    // Login function
+    function doLogin() {
+        errorMessage.color = accentColor
+        errorMessage.text = qsTr("Logging in...")
+        var selectedUser = userModel.data(userModel.index(userIndex, 0), Qt.UserRole + 1)
+        sddm.login(selectedUser, password.text, sessionIndex)
+    }
+
     // Settings persistence functions
     function saveSettings() {
         try {
@@ -576,7 +573,7 @@ Rectangle {
                 "theme": isDark ? "dark" : "light",
                 "session": sessionIndex
             }
-            // Используем встроенный механизм SDDM для сохранения настроек
+            // Use SDDM built-in configuration to persist settings
             if (typeof sddm !== 'undefined' && sddm.configuration) {
                 sddm.configuration.setValue("theme", settings.theme)
                 sddm.configuration.setValue("sessionIndex", settings.session)
@@ -588,7 +585,7 @@ Rectangle {
     
     function loadSettings() {
         try {
-            // Загружаем настройки из конфигурации SDDM
+            // Load settings from SDDM configuration
             if (typeof sddm !== 'undefined' && sddm.configuration) {
                 var savedTheme = sddm.configuration.value("theme", "dark")
                 var savedSession = sddm.configuration.value("sessionIndex", sessionModel.lastIndex)
@@ -600,44 +597,20 @@ Rectangle {
             }
         } catch (e) {
             console.log("Could not load settings: " + e)
-            // Используем значения по умолчанию
+            // Fall back to defaults
             isDark = true
             sessionIndex = sessionModel.lastIndex
         }
     }
     
-    // Keyboard event handlers and layout detection
-    Keys.onPressed: {
+    // Keyboard event handlers
+    Keys.onPressed: function(event) {
         if (event.key === Qt.Key_CapsLock) {
             capsLockOn = !capsLockOn
         }
     }
-    
-    // Keyboard layout detection
-    function updateCurrentLayout() {
-        try {
-            // Попытка получить текущую раскладку из системы
-            if (typeof keyboard !== 'undefined' && keyboard.layouts) {
-                var currentIdx = keyboard.currentLayout
-                if (currentIdx >= 0 && currentIdx < layouts.length) {
-                    currentLayout = currentIdx
-                    return
-                }
-            }
-            
-            // Резервный метод - получение раскладки через Qt
-            if (typeof Qt !== 'undefined' && Qt.locale) {
-                var locale = Qt.locale().name
-                if (locale.startsWith("ru")) currentLayout = 1
-                else if (locale.startsWith("de")) currentLayout = 2
-                else if (locale.startsWith("fr")) currentLayout = 3
-                else currentLayout = 0 // EN по умолчанию
-            }
-        } catch (e) {
-            // Если ничего не работает, оставляем EN
-            currentLayout = 0
-        }
-    }
+    Keys.onEnterPressed: doLogin()
+    Keys.onReturnPressed: doLogin()
     
     // Watch for theme changes
     onIsDarkChanged: saveSettings()
@@ -645,7 +618,7 @@ Rectangle {
     
     Component.onCompleted: {
         loadSettings()
-        password.focus = true
-        root.focus = true  // Needed to catch keyboard events
+        root.focus = true
+        password.forceActiveFocus()
     }
 }
